@@ -1,9 +1,12 @@
+import PIL
 import cv2
 from PIL import Image
 import os.path
 import numpy as np
 from scipy import fftpack
+import scipy.misc
 import matplotlib.pyplot as plt
+from scipy.misc import imshow
 
 
 
@@ -36,6 +39,7 @@ def convert_RGB_to_YCbCr(filepath):
 
     img = cv2.imread(filepath)
     bgr_img = img[...,::-1]
+    # print(bgr_img)
     YCC_scale = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2YCR_CB)
 
     return YCC_scale
@@ -69,9 +73,9 @@ def inverse_partition(y_component, cb_component, cr_component):
 
     i = 0
     j = 0
-    print(y_component)
-    print(cb_component)
-    print(cr_component)
+    # print(y_component)
+    # print(cb_component)
+    # print(cr_component)
 
     while i < len(y_component):
         row = []
@@ -82,7 +86,6 @@ def inverse_partition(y_component, cb_component, cr_component):
             temp2.append(cr_component[i][j])
             row.append(temp2)
             j += 1
-
         image.append(row)
         j = 0
         i += 1
@@ -233,10 +236,17 @@ if __name__=="__main__":
     y_component_position = 0
     cb_component_position = 1
     cr_component_position = 2
-    image_filepath = '/home/anna/JPEGcompression/flower.jpg'
+    image_filepath = 'flower.jpg'
     YCC_image = convert_RGB_to_YCbCr(image_filepath)
+
     all_blocks = partition(YCC_image)
-    test_block = all_blocks[0]
+    test_block = all_blocks[3]
+    print(type(test_block))
+    print(test_block[3])
+    # imshow(test_block)
+    test_block = convert_YCbCr_to_RGB(test_block)
+    cv2.imshow("original",test_block)
+    cv2.waitKey(0)
 
 
     y_component = dct_process(test_block, y_component_position)
@@ -252,7 +262,36 @@ if __name__=="__main__":
     # print(cr_component)
 
     inverse_partition = inverse_partition(y_component, cb_component, cr_component)
-    print(inverse_partition)
 
-    RGB = convert_YCbCr_to_RGB(inverse_partition)
-    print(RGB)
+    y = np.array(inverse_partition)
+    # new_image = y.astype(np.uint8)
+    # print(type(new_image))
+    # new_image_red, new_image_green, new_image_blue = new_image
+    # new_rgb = np.dstack([new_image_red, new_image_green, new_image_blue])
+    # print("start")
+
+    # print ( " ")
+    # print (test_block[2])
+    # print (inverse_partition)
+    # # plt.imshow(y)
+    im = Image.fromarray(np.uint8(y))
+    rgb = scipy.misc.toimage(y)
+    # rgb.show("Yewehfiowhf")
+    # print(type(new_rgb))
+    opencvImage = np.array(rgb)
+    cv2.imshow("decompressed",opencvImage)
+    cv2.waitKey(0)
+    # print(inverse_partition)
+    #
+    # new_image = []
+    # for i in range(8):
+    #     new_image1 = []
+    #     for j in range(8):
+    #         new_image1.append(inverse_partition[i][j][y_component_position])
+    #     new_image.append(new_image1)
+    # print(inverse_partition)
+    # print(new_image)
+    # print(inverse_partition)
+    # im = Image.fromarray(inverse_partition)
+    # RGB = convert_YCbCr_to_RGB(new_image)
+    # print(RGB)
